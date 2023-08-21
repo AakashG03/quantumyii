@@ -1,6 +1,6 @@
 <?php
 
-namespace frontend\models;
+namespace backend\models;
 
 use yii\base\Model;
 use common\models\Applicant;
@@ -64,9 +64,9 @@ class QuantumPasswordResetRequest extends Model
             if (!$applicant->save()) {
                 return false;
             }
-            return true;
-        }else{
+        } else {
             echo "Token already set \n";
+            return true;
         }
     }
 }

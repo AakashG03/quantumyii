@@ -1,12 +1,12 @@
 <?php
 
-namespace frontend\controllers;
+namespace backend\controllers;
 
 use yii\web\BadRequestHttpException;
 use common\models\Applicant;
-use frontend\models\QuantumLogin;
-use frontend\models\QuantumPasswordResetRequest;
-use frontend\models\QuantumResetPassword;
+use backend\models\QuantumLogin;
+use backend\models\QuantumPasswordResetRequest;
+use backend\models\QuantumResetPassword;
 use yii\rest\ActiveController;
 use Yii;
 
@@ -62,7 +62,6 @@ class ApplicantController extends ActiveController
     {
         $model = new QuantumPasswordResetRequest();
         if ($model->load(Yii::$app->request->post(), '') && $model->validate()) {
-            echo "inside";
             if ($model->sendEmail()) {
                 $applicant = Applicant::findOne(['email' => Yii::$app->request->getBodyParam('email')]);
                 print_r(Applicant::findOne(['email', $applicant]));
