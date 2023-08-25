@@ -49,8 +49,6 @@ use Yii;
  */
 class Applicant extends ActiveRecord implements IdentityInterface
 {
-    public $password_hash;
-    public $auth_key;
     /**
      * {@inheritdoc}
      */
@@ -138,7 +136,8 @@ class Applicant extends ActiveRecord implements IdentityInterface
     public function findByUsername($email)
     {
         $model = new Applicant();
-        return $model->findOne(['email' => $email]);
+        $data = $model->find(['email' => $email])->one();
+        return $data;
     }
     public function validatePassword($password, $password_hash)
     {

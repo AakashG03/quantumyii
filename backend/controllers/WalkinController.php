@@ -5,24 +5,51 @@ namespace backend\controllers;
 use common\models\JobRoles;
 use common\models\Hallticket;
 use yii\db\Query;
-use yii\rest\Controller;
+use yii\rest\ActiveController;
 use Yii;
 
-class WalkinController extends Controller
+class WalkinController extends ActiveController
 {
+    public $modelClass = JobRoles::class;
+    public function actionOptions()
+    {
+        $header = header('Access-Control-Allow-Origin: *');
+    }
+
+    public function behaviors()
+    {
+        $behaviors = parent::behaviors();
+
+        // remove authentication filter
+        $auth = $behaviors['authenticator'];
+        unset($behaviors['authenticator']);
+
+        // add CORS filter
+        $behaviors['corsFilter'] = [
+            'class' => \yii\filters\Cors::class,
+        ];
+
+        // re-add authentication filter
+        $behaviors['authenticator'] = $auth;
+        // avoid authentication on CORS-pre-flight requests (HTTP OPTIONS method)
+        $behaviors['authenticator']['except'] = ['options'];
+
+        return $behaviors;
+    }
     public function actionView()
     {
         $model = JobRoles::find()->asArray()->all();
-        echo json_encode($model, JSON_PRETTY_PRINT);
+        return ['data'=>$model];
     }
 
     public function actionJoblist()
     {
+        $data=[];
         $count1 = (new Query())->select('walkinjoblist.job_id')->from('walkinjoblist')->count();
         $i = 1;
         while ($i <= $count1) {
             $job_role = [];
-            $model1 = (new Query())->select('walkinjoblist.job_title,walkinjoblist.start_date,walkinjoblist.end_date,
+            $model1 = (new Query())->select('walkinjoblist.id,walkinjoblist.job_title,walkinjoblist.expire,walkinjoblist.start_date,walkinjoblist.end_date,
             walkinjoblist.location,walkinjoblist.internship')
                 ->from('walkinjoblist')
                 ->where(['walkinjoblist.id' => $i])
@@ -40,9 +67,10 @@ class WalkinController extends Controller
                 $j++;
             }
             $job_role = ["job_roles" => $role_array];
-            echo json_encode(array_merge($model1, $job_role), JSON_PRETTY_PRINT);
+            array_push($data,array_merge($model1, $job_role));
             $i++;
         }
+        return ['data'=>$data];
     }
 
     public function actionJobdetails($id)
@@ -66,7 +94,8 @@ class WalkinController extends Controller
             $j++;
         }
         $job_role = ["job_roles" => $role_array];
-        echo json_encode(array_merge($model1, $job_role), JSON_PRETTY_PRINT);
+        // echo json_encode(array_merge($model1, $job_role), JSON_PRETTY_PRINT);
+        return ['data'=>array_merge($model1, $job_role)];
     }
 
     public function actionApplyjob()

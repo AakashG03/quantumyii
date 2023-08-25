@@ -9,21 +9,48 @@ use backend\models\QuantumPasswordResetRequest;
 use backend\models\QuantumResetPassword;
 use yii\rest\ActiveController;
 use Yii;
+use yii\db\Query;
 
 class ApplicantController extends ActiveController
 {
+
     public $modelClass = Applicant::class;
+
+    public function actionOptions()
+    {
+        $header = header('Access-Control-Allow-Origin: *');
+    }
+
+    public function behaviors()
+    {
+        $behaviors = parent::behaviors();
+
+        // remove authentication filter
+        $auth = $behaviors['authenticator'];
+        unset($behaviors['authenticator']);
+
+        // add CORS filter
+        $behaviors['corsFilter'] = [
+            'class' => \yii\filters\Cors::class,
+        ];
+
+        // re-add authentication filter
+        $behaviors['authenticator'] = $auth;
+        // avoid authentication on CORS-pre-flight requests (HTTP OPTIONS method)
+        $behaviors['authenticator']['except'] = ['options'];
+
+        return $behaviors;
+    }
     public function actionPreview()
     {
         $id = Yii::$app->request->get('id');
         if (!$id) {
             $profiles = Applicant::find()->asArray()->all();
-            echo json_encode($profiles, JSON_PRETTY_PRINT);
+            return ['data'=>$profiles];
         } else {
             $profiles = Applicant::find()->where(['id' => $id])->asArray()->one();
-            echo json_encode($profiles, JSON_PRETTY_PRINT);
+            return ['data'=>$profiles];
         }
-        // echo json_encode(Yii::$app->user->identity,JSON_PRETTY_PRINT);
     }
     public function actionAdd()
     {
@@ -46,11 +73,23 @@ class ApplicantController extends ActiveController
     }
     public function actionLogin()
     {
-        $request = Yii::$app->request;
-        $email = $request->getBodyParam('email');
         $login = new QuantumLogin();
-        $data = $login->findByEmail($email);
-        echo print_r($data);
+        $data = $login->findByEmail();
+        if($data){
+            return ["data"=>$data];
+        }else{
+            return ["data"=>"No Email found"];
+        }
+    }
+    public function actionCheckauth(){
+        $request = Yii::$app->request;
+        $auth_key = $request->getBodyParam('auth_key');
+        $query = (new Query())
+        ->select('first_name')
+        ->from('applicant')
+        ->where(['auth_key'=>$auth_key])
+        ->one();
+        return ["data"=>$query];
     }
     public function actionLogout()
     {
@@ -92,9 +131,9 @@ class ApplicantController extends ActiveController
     }
     public function actionUpdateapplicant($id)
     {
-        $model = Applicant::find()->where(['id' => $id])->one();  
-        if($model === null)   
-        throw new BadRequestHttpException('The requested page does not exist.');   
+        $model = Applicant::find()->where(['id' => $id])->one();
+        if ($model === null)
+            throw new BadRequestHttpException('The requested page does not exist.');
         if ($model->load(Yii::$app->getRequest()->post(), '')) {
             if ($model->save()) {
                 echo "Changes Saved";
@@ -104,7 +143,6 @@ class ApplicantController extends ActiveController
                 print_r($model->getErrors());
                 exit;
             }
-
         }
     }
 }

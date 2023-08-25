@@ -21,21 +21,16 @@ class QuantumLogin extends Model
             ['rememberMe', 'boolean'],
         ];
     }
-    public function findByEmail($email)
+    public function findByEmail()
     {
         $model = new Applicant();
         $request = Yii::$app->request;
-        $this->rememberMe = $request->getBodyParam('remember_me');
         $this->email = $request->getBodyParam('email');
-        $row = Applicant::find()->where(['email' => $email])->one();
+        $row = Applicant::find()->where(['email' => $this->email])->asArray()->one();
         if (!is_null($row)) {
             if ($model->validatePassword($request->getBodyParam('password'), $row['password']) && $this->login()) {
-                return Yii::$app->user->identity;
-            } else {
-                return json_encode(["creds" => "invalid or not logged in"], JSON_PRETTY_PRINT);
+                return $row;
             }
-        } else {
-            return json_encode(["creds" => "invalid"], JSON_PRETTY_PRINT);
         }
     }
     public function login()
@@ -49,7 +44,8 @@ class QuantumLogin extends Model
     protected function getEmail()
     {
         $model = new Applicant();
-        $this->email = $model->findByUsername($this->email);
-        return $this->email;
+        $data = $model->findByUsername($this->email);
+        return $data;
+        // echo json_encode($data);
     }
 }
