@@ -39,12 +39,12 @@ class WalkinController extends ActiveController
     public function actionView()
     {
         $model = JobRoles::find()->asArray()->all();
-        return ['data'=>$model];
+        return ['data' => $model];
     }
 
     public function actionJoblist()
     {
-        $data=[];
+        $data = [];
         $count1 = (new Query())->select('walkinjoblist.job_id')->from('walkinjoblist')->count();
         $i = 1;
         while ($i <= $count1) {
@@ -67,21 +67,21 @@ class WalkinController extends ActiveController
                 $j++;
             }
             $job_role = ["job_roles" => $role_array];
-            array_push($data,array_merge($model1, $job_role));
+            array_push($data, array_merge($model1, $job_role));
             $i++;
         }
-        return ['data'=>$data];
+        return ['data' => $data];
     }
 
     public function actionJobdetails($id)
     {
-        $model1 = (new Query())->select('walkinjoblist.job_title,walkinjoblist.start_date,walkinjoblist.end_date,
+        $model1 = (new Query())->select('walkinjoblist.id,walkinjoblist.job_title,walkinjoblist.start_date,walkinjoblist.end_date,
             walkinjoblist.location,walkinjoblist.internship,walkinjoblist.general_instructions,walkinjoblist.exam_instructions,
             walkinjoblist.minimum_sys_req,walkinjoblist.process')
             ->from('walkinjoblist')
             ->where(['walkinjoblist.id' => $id])
             ->one();
-        $model2 = (new Query())->select('roles.role_name,roles.gross_package,roles.role_description,roles.requirements')
+        $model2 = (new Query())->select('roles.id,roles.role_name,roles.gross_package,roles.role_description,roles.requirements')
             ->from('roles')
             ->join('INNER JOIN', 'job_roles', 'job_roles.role_id=roles.id')
             ->where(['job_roles.job_id' => $id])
@@ -95,16 +95,18 @@ class WalkinController extends ActiveController
         }
         $job_role = ["job_roles" => $role_array];
         // echo json_encode(array_merge($model1, $job_role), JSON_PRETTY_PRINT);
-        return ['data'=>array_merge($model1, $job_role)];
+        return ['data' => array_merge($model1, $job_role)];
     }
 
     public function actionApplyjob()
     {
+        $header = header('Access-Control-Allow-Origin: *');
         $model = new Hallticket();
-        if ($model->load(Yii::$app->getRequest()->post(), '') && $model->save())
-        {
-            echo "Hallticket Created";
-        }else {
+        if ($model->load(Yii::$app->getRequest()->post(), '') && $model->save()) {
+            return ['data' => 'Hallticket Created'];
+            // echo "Hallticket Created";
+        } else {
+            // return ['data' => 'Error'];
             print_r($model->getAttributes());
             print_r($model->getErrors());
             exit;
@@ -114,6 +116,7 @@ class WalkinController extends ActiveController
     public function actionViewhallticket($id)
     {
         $hallticket = Hallticket::find()->where(['id' => $id])->asArray()->one();
-        echo json_encode($hallticket,JSON_PRETTY_PRINT);
+        return ['data' => $hallticket];
+        // echo json_encode($hallticket, JSON_PRETTY_PRINT);
     }
 }

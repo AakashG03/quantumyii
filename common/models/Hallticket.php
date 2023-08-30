@@ -11,7 +11,7 @@ use Yii;
  * @property int $id
  * @property int $user_id
  * @property int $job_id
- * @property string $roles_applied
+ * @property string $tech_fam
  * @property string $date
  * @property string $time
  * @property string $venue
@@ -37,9 +37,9 @@ class Hallticket extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['user_id', 'job_id', 'roles_applied', 'date', 'time', 'venue'], 'required'],
+            [['user_id', 'job_id', 'tech_fam', 'date', 'time', 'venue'], 'required'],
             [['user_id', 'job_id', 'created_at', 'updated_at'], 'integer'],
-            [['roles_applied', 'time', 'venue'], 'string'],
+            [['tech_fam', 'time', 'venue'], 'string'],
             [['date'], 'safe'],
             [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => Applicant::class, 'targetAttribute' => ['user_id' => 'id']],
             [['job_id'], 'exist', 'skipOnError' => true, 'targetClass' => JobRoles::class, 'targetAttribute' => ['job_id' => 'id']],
@@ -60,7 +60,7 @@ class Hallticket extends \yii\db\ActiveRecord
             'id' => 'ID',
             'user_id' => 'User ID',
             'job_id' => 'Job ID',
-            'roles_applied' => 'Roles Applied',
+            'tech_fam' => 'Tech Fam',
             'date' => 'Date',
             'time' => 'Time',
             'venue' => 'Venue',
